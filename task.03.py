@@ -8,10 +8,6 @@ G = nx.Graph()
 people = ['Hanna', 'Serhii', 'Ivan', 'Dariya', 'Olena', 'Franko']
 G.add_nodes_from(people)
 
-# Додавання зв'язків (дружби) між деякими людьми
-#friendships = [('Hanna', 'Serhii'), ('Serhii', 'Ivan'), ('Serhii', 'Olena'), ('Olena', 'Ivan'), ('Ivan', 'Dariya'), ('Dariya', 'Olena'), ('Olena', 'Franko'), ('Franko', 'Hanna')]
-#G.add_edges_from(friendships)
-
 # Додавання ваг до ребер у графі
 edges_with_weights = [('Hanna', 'Serhii', 1), ('Serhii', 'Ivan', 3), ('Serhii', 'Olena', 2),
                       ('Olena', 'Ivan', 4), ('Ivan', 'Dariya', 5), ('Dariya', 'Olena', 2),
@@ -19,18 +15,34 @@ edges_with_weights = [('Hanna', 'Serhii', 1), ('Serhii', 'Ivan', 3), ('Serhii', 
 G.add_weighted_edges_from(edges_with_weights)
 
 # Функція для знаходження найкоротших шляхів за допомогою алгоритму Дейкстри
-def dijkstra_shortest_paths(graph):
-    shortest_paths = {}
-    for node in graph.nodes:
-        shortest_paths[node] = nx.single_source_dijkstra_path_length(graph, node)
+def dijkstra_shortest_paths(graph, start):
+    # Ініціалізація списку для зберігання найкоротших відстаней
+    shortest_paths = {node: float('inf') for node in graph.nodes}
+    # Початкова вершина має відстань 0
+    shortest_paths[start] = 0
+    # Ініціалізація списку відвіданих вершин
+    visited = set()
+    # Цикл для обробки всіх вершин графа
+    while len(visited) < len(graph.nodes):
+        # Знаходження вершини з найменшою відстанню
+        current_node = min((node for node in graph.nodes if node not in visited), key=lambda x: shortest_paths[x])
+        # Додавання поточної вершини до списку відвіданих
+        visited.add(current_node)
+        # Отримання сусідів поточної вершини
+        neighbors = graph[current_node]
+        for neighbor, weight in neighbors.items():
+            # Розрахунок нової відстані до сусіда
+            new_distance = shortest_paths[current_node] + weight['weight']
+            # Оновлення найкоротшого шляху, якщо знайдено коротший
+            if new_distance < shortest_paths[neighbor]:
+                shortest_paths[neighbor] = new_distance
     return shortest_paths
 
-# Знаходження найкоротших шляхів
-shortest_paths = dijkstra_shortest_paths(G)
 
-# Виведення найкоротших шляхів
-for node in shortest_paths:
-    print(f"Найкоротші шляхи від вершини {node}: {shortest_paths[node]}")
+# Знаходження та виведення найкоротших шляхів
+for node in people:
+    shortest_paths = dijkstra_shortest_paths(G, node)
+    print(f"Найкоротші шляхи від вершини {node}: {shortest_paths}")
 
 
 # Візуалізація графа
